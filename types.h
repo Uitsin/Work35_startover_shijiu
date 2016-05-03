@@ -1,0 +1,9 @@
+const int ROCK_ATOM_TYPE = 1;
+const int CHANNEL_ATOM_TYPE = 4;
+
+const int ISOLATED_CHANNEL_ATOM_TYPE = 2;
+const int CONNECTED_CHANNEL_ATOM_TYPE = 3;
+
+const int SPRING_BOND_TYPE = 1;
+const int DRY_CHANNEL_BOND_TYPE = 2;
+const int WET_CHANNEL_BOND_TYPE = 3;

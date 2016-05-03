@@ -23,7 +23,7 @@ FixStyle(lubrication/update_BC,FixLubricationUpdateBC)
 #include "fix.h"
 
 extern double BC_XLO, BC_XHI, BC_YLO, BC_YHI, BC_ZLO, BC_ZHI;
-extern double FOOX, FOOY, FOOZ;
+//extern double FOOX, FOOY, FOOZ;
 
 namespace LAMMPS_NS {
 

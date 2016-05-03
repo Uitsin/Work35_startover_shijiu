@@ -190,11 +190,11 @@ int DumpChLocal::modify_param(int narg, char **arg)
 /* ---------------------------------------------------------------------- */
 
 void DumpChLocal::write_header(bigint ndump)
-{/*
-  if (me == 0){
-    fprintf(fp,"ITEM: NUMBER OF %s\n",label);
-  }
- */
+{
+  //  if (me == 0){
+  //    fprintf(fp,"ITEM: NUMBER OF %s\n",label);
+  //  }
+
 
   /*  if (me == 0) {
     fprintf(fp,"ITEM: TIMESTEP\n");

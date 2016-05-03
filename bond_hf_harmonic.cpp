@@ -87,11 +87,6 @@ void BondHfHarmonic::compute(int eflag, int vflag)
   double fsum_x,fsum_y,fsum_z;
 
 
-  FOOX = 0.0;
-  FOOY = 0.0;
-  FOOZ = 0.0;
-  ///////////\\\\\\\\
-
   for (n = 0; n<atom->nmax;n++){
     f0[n][0]= 0.0;
     f0[n][1]= 0.0;
@@ -325,17 +320,6 @@ void BondHfHarmonic::compute(int eflag, int vflag)
 
   }
 
-  for (n = 0; n<atom->nmax;n++){
-      
-      if (x0[n][0]==9 && x0[n][1]==102 && x0[n][2]==4) {
-	
-	FOOX = f[n][0];
-	FOOY = f[n][1];
-	FOOZ = f[n][2];
-
-      }
-
-   }
 
   rock_force_update();
   comm->forward_comm();

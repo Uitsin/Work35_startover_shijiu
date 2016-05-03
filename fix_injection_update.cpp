@@ -28,14 +28,12 @@
 #include "memory.h"
 #include "neighbor.h"
 #include "types.h"
+#include "domain.h"
+#include "lattice.h"
 #define TINY  1.e-3 ;
-
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
-double INJECT_X; 
-double INJECT_Y; 
-double INJECT_Z;
 
 /* ---------------------------------------------------------------------- */
 
@@ -49,11 +47,7 @@ FixInjectionUpdate::FixInjectionUpdate(LAMMPS *lmp, int narg, char **arg) :
   injection_z = atof(arg[5]);
   injection_rate = atof(arg[6]);// bbl/min
 
-  INJECT_X = injection_x;
-  INJECT_Y = injection_y;
-  INJECT_Z = injection_z;
-
-
+/*
   int check_injection_point;
   int check_x, check_y, check_z;
   check_injection_point = 0;
@@ -68,14 +62,14 @@ FixInjectionUpdate::FixInjectionUpdate(LAMMPS *lmp, int narg, char **arg) :
     fprintf(screen, "!! Wrong!!!The injection position is Wrong !!!!, make sure (x%2)=0.5 or (y%2)=0.5 or (z%2)=0.5 ");
     error->one(FLERR,"!! Wrong!!!The injection position is Wrong !!!!, make sure (x%2)=0.5 or (y%2)=0.5 or (z%2)=0.5 ");
   }
-
+*/
 
   /*
   double H =30;//  meter
   injection_rate =  0.0088*(injection_rate/100.0)*(30.0/H); // m^3/sec
   */
   // one bbl/min = 1/377.39 m^3/s
-  injection_rate =  0.00265 *injection_rate; // m^3/sec
+  injection_rate =  1/377.39 *injection_rate; // m^3/sec
   
 
 }
@@ -124,6 +118,9 @@ void FixInjectionUpdate:: injection_process()
   double *channel_width = atom->channel_width;
   int nstep = update->ntimestep;
   double dw;
+  
+  double lattice_mag = domain->lattice->xlattice;
+
   for (n=0; n<nlocal;n++){
     if (atype[n] != CONNECTED_CHANNEL_ATOM_TYPE) continue;
     channel_atomi = n;
@@ -132,7 +129,7 @@ void FixInjectionUpdate:: injection_process()
     channelz = x0[channel_atomi][2];
     if ((fabs(channelx - injection_x) > 1.e-8 ) || ( fabs(channely-injection_y)>1.e-8 ) ||  ( fabs(channelz-injection_z)>1.e-8 )) continue;// not injection position  
 
-    dw = injection_rate*update->dt;
+    dw = injection_rate * update->dt / (lattice_mag* lattice_mag);
     channel_width[channel_atomi] += dw;
     if ((update->ntimestep % 10000 )==0) fprintf(screen, "injection process: timestep %d, delta_w = %f (microns),channel_width %f (mm),  at x y z %f %f %f\n ",nstep,dw*1000000,channel_width[channel_atomi]*1000,x0[channel_atomi][0],x0[channel_atomi][1],x0[channel_atomi][2] );
   }

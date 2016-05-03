@@ -34,6 +34,7 @@
 #include "domain.h"
 #include "timer.h"
 #include "types.h"
+#include "lattice.h"
 #define TINY  1.e-3 ;
 #define FAKE_INT_VALUE  -991 ;
 
@@ -70,6 +71,14 @@ void DeltaCutoffRandomness3::command(int narg, char **arg)
   int check_x, check_y, check_z;
   int *atype = atom->type;
 
+  double lattice_mag = domain->lattice->xlattice;
+
+
+  ///////
+
+  fprintf(screen, "Hello world! Outside");
+
+  ///////
 
   for (n = 0; n < nlocal; n++){
     if (atype[n] == ROCK_ATOM_TYPE) continue; // this is not a channel element
@@ -78,25 +87,45 @@ void DeltaCutoffRandomness3::command(int narg, char **arg)
     channel_y = x0[channel_atom][1];
     channel_z = x0[channel_atom][2];
     
-    check_x = (fmod(fabs(channel_x-0.5), 2.0) ==0); //and (flag_x == 1);
-    check_y = (fmod(fabs(channel_y-0.5), 2.0) ==0); //and (flag_y == 1);
-    check_z = (fmod(fabs(channel_z-0.5), 2.0) ==0); // and (flag_z == 1);
+    check_x = (fmod(fabs(channel_x-0.5*lattice_mag), 1.0*lattice_mag) ==0); //and (flag_x == 1);
+    check_y = (fmod(fabs(channel_y-0.5*lattice_mag), 1.0*lattice_mag) ==0); //and (flag_y == 1);
+    check_z = (fmod(fabs(channel_z-0.5*lattice_mag), 1.0*lattice_mag) ==0); // and (flag_z == 1);
+
     
     channel_delta_cutoff[channel_atom] = 1000000; 	// make all bond unbreakable 
 
     /* generate random number between -0.5 and 0.5: */
     if (check_x){
       random_value =  (double)rand() / (RAND_MAX) -0.5 ;
-      channel_delta_cutoff[n] = cutoff_mean_x + cutoff_dev_x * random_value;
+      channel_delta_cutoff[n] = (cutoff_mean_x + cutoff_dev_x * random_value);
     }
     if (check_y){
       random_value =  (double)rand() / (RAND_MAX) -0.5 ;
-      channel_delta_cutoff[n] = cutoff_mean_y + cutoff_dev_y * random_value;
+      channel_delta_cutoff[n] = (cutoff_mean_y + cutoff_dev_y * random_value);
     }
     if (check_z){
       random_value =  (double)rand() / (RAND_MAX) -0.5 ;
-      channel_delta_cutoff[n] = cutoff_mean_z + cutoff_dev_z * random_value;
+      channel_delta_cutoff[n] = (cutoff_mean_z + cutoff_dev_z * random_value);
     }
+
+    ///////////////////////////////////check check_x////////////////////////
+
+
+    if (atype[n] != CONNECTED_CHANNEL_ATOM_TYPE) continue;
+
+      fprintf(screen, "Hello world!  Inside");
+      
+      fprintf(screen, "x0 = %f, y0 = %f, z0 = %f\n\n", channel_x, channel_y, channel_z);  
+
+	fprintf(screen, "check_x = %d\n channel_x = %f\n lattice_mag = %f\n RHS = %f\n", check_x, channel_x, lattice_mag, fmod(fabs(channel_x-0.5*lattice_mag), 1.0*lattice_mag) ); 
+      fprintf(screen, "check_y = %d\n channel_y = %f\n lattice_mag = %f\n RHS = %f\n", check_y, channel_y, lattice_mag, fmod(fabs(channel_y-0.5*lattice_mag), 1.0*lattice_mag) ); 
+      fprintf(screen, "check_z = %d\n channel_z = %f\n lattice_mag = %f\n RHS = %f\n", check_z, channel_z, lattice_mag, fmod(fabs(channel_z-0.5*lattice_mag), 1.0*lattice_mag) ); 
+    fprintf(screen, "channel_delta_cutoff[n] = %f\n\n", cutoff_mean_z ); 
+
+    
+
+    ///////////////////////////////////////check check_x/////////////////////
+
   }
   
   

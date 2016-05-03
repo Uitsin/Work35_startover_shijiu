@@ -395,6 +395,8 @@ void CreateHfAtoms::add_lattice()
 
   double bboxlo[3],bboxhi[3];
 
+  double  lattice_mag = domain->lattice->xlattice;
+
   if (triclinic == 0) {
     bboxlo[0] = domain->sublo[0]; bboxhi[0] = domain->subhi[0];
     bboxlo[1] = domain->sublo[1]; bboxhi[1] = domain->subhi[1];
@@ -460,10 +462,11 @@ void CreateHfAtoms::add_lattice()
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   fprintf(screen,"\n =======  reported by processor %d of size %d=======\n\n", my_rank, size);
 
-  int i,j,k,m;
-  for (k = klo; k <= khi; k++)
-    for (j = jlo; j <= jhi; j++)
-      for (i = ilo; i <= ihi; i++)
+  double i,j,k;
+  int m;
+  for (k = klo; k <= khi; k = k + lattice_mag)
+    for (j = jlo; j <= jhi; j = j + lattice_mag)
+      for (i = ilo; i <= ihi; i = i + lattice_mag)
         for (m = 0; m < nbasis; m++) {
 
           x[0] = i + basis[m][0];
@@ -471,17 +474,17 @@ void CreateHfAtoms::add_lattice()
           x[2] = k + basis[m][2];
 	  //	  fprintf(screen, "basis basis[m][0], basis[m][1],basis[m][2] %f %f %f \n",basis[m][0],basis[m][1],basis[m][2]);
 
-	  y[0] = x[0]+0.5;
+	  y[0] = x[0] + 0.5*lattice_mag;
 	  y[1] = x[1];
 	  y[2] = x[2];
 
 	  y2[0] = x[0];
-	  y2[1] = x[1]+0.5;
+	  y2[1] = x[1] + 0.5*lattice_mag;
 	  y2[2] = x[2];
 	  
 	  y3[0] = x[0];
 	  y3[1] = x[1];
-	  y3[2] = x[2]+0.5;
+	  y3[2] = x[2] + 0.5*lattice_mag;
 
           // convert from lattice coords to box coords
 

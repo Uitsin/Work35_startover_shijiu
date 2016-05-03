@@ -32,6 +32,7 @@
 #include "neighbor.h"
 #include "memory.h"
 #include "domain.h"
+#include "lattice.h"
 #include "irregular.h"
 #define TINY  1.e-3 ;
 #define FAKE_INT_VALUE  -991 ;
@@ -69,7 +70,11 @@ void BondRockRock::command(int narg, char **arg)
   int cond0,cond1,cond2,cond3,cond4,cond5;
   double  lattice_spacing_x=(x0[0][0]-x0[1][0]);
   double  lattice_spacing_y=(x0[0][1]-x0[1][1]);
-  double  lattice_mag=sqrt(lattice_spacing_x*lattice_spacing_x+lattice_spacing_y*lattice_spacing_y); //the distance of two neighboring channels
+
+  //
+  // double  lattice_mag=sqrt(lattice_spacing_x*lattice_spacing_x+lattice_spacing_y*lattice_spacing_y); //the distance of two neighboring channels
+  double  lattice_mag = domain->lattice->xlattice;
+
 
   
   int **bond_atom = atom->bond_atom;
@@ -152,12 +157,12 @@ void BondRockRock::command(int narg, char **arg)
       yj = x0[rock_atomj][1];
       zj = x0[rock_atomj][2];
       
-      cond0 = ( (fabs(xj - (xi - 1.0) )<1.e-6) && (fabs(yj - yi) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6) );  // first neighbor 
-      cond1 = ( (fabs(xj - (xi + 1.0) )<1.e-6) && (fabs(yj - yi) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6) );  // second neighbor
-      cond2 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - (yi - 1.0) ) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6)  );
-      cond3 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - (yi + 1.0) ) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6)  );
-      cond4 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - yi)  < 1.e-6) &&  (fabs(zj - (zi - 1.0)) < 1.e-6)  );
-      cond5 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - yi)  < 1.e-6) &&  (fabs(zj - (zi + 1.0)) < 1.e-6)  );
+      cond0 = ( (fabs(xj - (xi - 1.0*lattice_mag) )<1.e-6) && (fabs(yj - yi) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6) );  // first neighbor 
+      cond1 = ( (fabs(xj - (xi + 1.0*lattice_mag) )<1.e-6) && (fabs(yj - yi) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6) );  // second neighbor
+      cond2 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - (yi - 1.0*lattice_mag) ) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6)  );
+      cond3 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - (yi + 1.0*lattice_mag) ) < 1.e-6) &&  (fabs(zj - zi) < 1.e-6)  );
+      cond4 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - yi)  < 1.e-6) &&  (fabs(zj - (zi - 1.0*lattice_mag)) < 1.e-6)  );
+      cond5 = ( (fabs(xj - xi)<1.e-6) && (fabs(yj - yi)  < 1.e-6) &&  (fabs(zj - (zi + 1.0*lattice_mag)) < 1.e-6)  );
       
       
       if (cond0 ==1){

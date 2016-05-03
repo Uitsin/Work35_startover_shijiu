@@ -30,13 +30,13 @@
 #include "memory.h"
 #include "neighbor.h"
 #include "types.h"
+#include "domain.h"
+#include "lattice.h"
 #define TINY  1.e-3 ;
 #define  FAKE_INT_VALUE -991;
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
-double BC_XLO, BC_XHI, BC_YLO, BC_YHI, BC_ZLO, BC_ZHI;
-double FOOX, FOOY, FOOZ;
 
 /* ---------------------------------------------------------------------- */
 
@@ -53,13 +53,6 @@ FixLubricationUpdateBC::FixLubricationUpdateBC(LAMMPS *lmp, int narg, char **arg
 
   BC_zlo = atof(arg[7]);
   BC_zhi = atof(arg[8]);
-
-  BC_XLO = BC_xlo;
-  BC_XHI = BC_xhi;
-  BC_YLO = BC_ylo;
-  BC_YHI = BC_yhi;
-  BC_ZLO = BC_zlo;
-  BC_ZHI = BC_zhi;
 
   vij_max = atof(arg[9]);
 
@@ -170,6 +163,9 @@ void FixLubricationUpdateBC::cal_channel_pressure()
   double delta_mag;
   int *tag = atom->tag;
   double check_force;
+  double L = domain->lattice->xlattice;
+
+
   for (n=0; n<nlocal; n++){
     if (atype[n] != CONNECTED_CHANNEL_ATOM_TYPE) continue;
     channel_atom = n;
@@ -185,7 +181,7 @@ void FixLubricationUpdateBC::cal_channel_pressure()
 
     if ( (update->ntimestep > 10)  && check_force ==0 ) fprintf(screen, "Wrong!! force is zero !!!%f at timestep %d\n", check_force, update->ntimestep);
 
-    pressure =-( (f0[rock_atom1][0]*delta_x+f0[rock_atom1][1]*delta_y + f0[rock_atom1][2]*delta_z) -(f0[rock_atom2][0]*delta_x+f0[rock_atom2][1]*delta_y + f0[rock_atom2][2]*delta_z) )/2.0/delta_mag;
+    pressure =-( (f0[rock_atom1][0]*delta_x+f0[rock_atom1][1]*delta_y + f0[rock_atom1][2]*delta_z) -(f0[rock_atom2][0]*delta_x+f0[rock_atom2][1]*delta_y + f0[rock_atom2][2]*delta_z) )/2.0/delta_mag/L/L;
 
     if (pressure < 0) {
       //      fprintf(screen, "at t= %.3f, this channel has negative pressure! %.2f (MPa) at x y z %f %f %f \n", update->ntimestep*update->dt, pressure*1.e-6, x0[channel_atom][0],x0[channel_atom][1],x0[channel_atom][2]);
@@ -218,9 +214,9 @@ void FixLubricationUpdateBC::lubrication(){
   double local_w;
   double on_twelve_mu_L;
   double **v = atom->v;
-  double L = 1.0;
+  double L = domain->lattice->xlattice; 
   double vil; 
-  double mu = 1.e-3; //Pa.s
+  double mu = 1.0e-3; //Pa.s
   int channel_atomi, channel_atomj;
   int *num_bond_channel_atom = atom ->num_bond_channel_atom;
   int **bond_channel_atom = atom->bond_channel_atom;
@@ -262,7 +258,7 @@ void FixLubricationUpdateBC::lubrication(){
 	else {vij = -vij_max;}  
       }
 
-      dw = vij * update->dt;
+      dw = vij * (update->dt) /L;
       channel_width[channel_atomi]+=dw;
     }
   }
@@ -288,6 +284,7 @@ void FixLubricationUpdateBC::channel_update(){
   double **x = atom->x;
   int newton_bond = force->newton_bond;
   int nlocal = atom->nlocal;
+  double L = domain->lattice->xlattice;
 
   //  neighbor->build_topology();
 
@@ -311,25 +308,25 @@ void FixLubricationUpdateBC::channel_update(){
 
     if (newton_bond || rock_atom1 <nlocal){
       if (fabs(delta_x)  == delta_mag) {
-	x[rock_atom1][0] = x[channel_atom][0] +0.5*(1+channel_w) * delta_x/delta_mag;
+	x[rock_atom1][0] = x[channel_atom][0] +0.5*(L+channel_w) * delta_x/delta_mag;
       }
       if (fabs(delta_y)  == delta_mag) {
-	x[rock_atom1][1] = x[channel_atom][1] +0.5*(1+channel_w) * delta_y/delta_mag;
+	x[rock_atom1][1] = x[channel_atom][1] +0.5*(L+channel_w) * delta_y/delta_mag;
       }
       if (fabs(delta_z)  == delta_mag) {
-	x[rock_atom1][2] = x[channel_atom][2] +0.5*(1+channel_w) * delta_z/delta_mag;
+	x[rock_atom1][2] = x[channel_atom][2] +0.5*(L+channel_w) * delta_z/delta_mag;
       }
 
     }
     if (newton_bond || rock_atom2 <nlocal){
       if (fabs(delta_x)  == delta_mag) {
-	x[rock_atom2][0] = x[channel_atom][0] -0.5*(1+channel_w) * delta_x/delta_mag;
+	x[rock_atom2][0] = x[channel_atom][0] -0.5*(L+channel_w) * delta_x/delta_mag;
       }
       if (fabs(delta_y)  == delta_mag) {
-	x[rock_atom2][1] = x[channel_atom][1] -0.5*(1+channel_w) * delta_y/delta_mag;
+	x[rock_atom2][1] = x[channel_atom][1] -0.5*(L+channel_w) * delta_y/delta_mag;
       }
       if (fabs(delta_z)  == delta_mag) {
-	x[rock_atom2][2] = x[channel_atom][2] -0.5*(1+channel_w) * delta_z/delta_mag;
+	x[rock_atom2][2] = x[channel_atom][2] -0.5*(L+channel_w) * delta_z/delta_mag;
       }
     }
   }
@@ -460,6 +457,7 @@ void FixLubricationUpdateBC::bond_break()
   int BC_cond; // unbreakable bonds outside this region
   double *channel_delta_cutoff = atom -> channel_delta_cutoff;
   double cutoff;
+  double L = domain->lattice->xlattice;
 
   for (n =0; n <nlocal; n++) {
     if (atype[n] != ROCK_ATOM_TYPE ) continue; // this is not a rock atom
@@ -514,7 +512,7 @@ void FixLubricationUpdateBC::bond_break()
 	    x[channel_atom][0] = 0.5*(x[rock_atom1][0] + x[rock_atom2][0] );
 	    x[channel_atom][1] = 0.5*(x[rock_atom1][1] + x[rock_atom2][1] );
 	    x[channel_atom][2] = 0.5*(x[rock_atom1][2] + x[rock_atom2][2] );
-	    if (channel_width[channel_atom]+1 >dist) {
+	    if (channel_width[channel_atom] + L > dist) {
 	      bond_type[rock_atom1][m] = WET_CHANNEL_BOND_TYPE;
 	      fprintf(screen, "ntimestep %d  wet channel created, dist %f > cutoff %f at x y z %f %f %f \n", nstep, dist, cutoff, x0[channel_atom][0], x0[channel_atom][1], x0[channel_atom][2]);
 	    }

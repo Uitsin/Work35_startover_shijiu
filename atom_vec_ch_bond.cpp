@@ -36,9 +36,9 @@ AtomVecChBond::AtomVecChBond(LAMMPS *lmp) : AtomVec(lmp)
   comm_x_only = 1;
   comm_f_only = 1;
   
-  size_forward = 3+3+3+3+3+1+3;// coords[3]+x0+ f0[3]+ ffixb[3] +channel_pressure+channel_width+channel_width_old+channel_delta_cutoff+tag
+  size_forward = 3+3+3+3+3+1;// coords[3]+x0+ f0[3] +channel_pressure+channel_width+channel_width_old+channel_delta_cutoff+tag
   size_reverse = 3; // force
-  size_border = 7+3+3+3+3;  // ffib[3] also needs 3.
+  size_border = 7+3+3+3;
   size_velocity = 3;
   //  size_data_atom = 6;  //1:atom-ID 2:molecule-ID 3:atom-type 4:x 5:y 6:z 
   size_data_atom = 9+3+3;  //1:atom-ID 2:molecule-ID 3:atom-type 4:x 5:y 6:z 7:x0 8:y0 9: z0  10:x1 11:y1 12: z1 
@@ -72,7 +72,6 @@ void AtomVecChBond::grow(int n)
   v = memory->grow(atom->v,nmax,3,"atom:v");
   f = memory->grow(atom->f,nmax*comm->nthreads,3,"atom:f");
   f0 = memory->grow(atom->f0,nmax,3,"atom:f0");
-  ffixb = memory->grow(atom->ffixb,nmax,3,"atom:ffixb");
 
 
   molecule = memory->grow(atom->molecule,nmax,"atom:molecule");
@@ -118,7 +117,6 @@ void AtomVecChBond::grow_reset()
   v = atom->v; 
   f = atom->f;
   f0 = atom->f0;
-  ffixb = atom->ffixb;
   
   molecule = atom->molecule;
   nspecial = atom->nspecial; special = atom->special;
@@ -168,10 +166,6 @@ void AtomVecChBond::copy(int i, int j, int delflag)
   f0[j][0] = f0[i][0];
   f0[j][1] = f0[i][1];
   f0[j][2] = f0[i][2];
-
-  ffixb[j][0] = ffixb[i][0];
-  ffixb[j][1] = ffixb[i][1];
-  ffixb[j][2] = ffixb[i][2];
 
 
   molecule[j] = molecule[i];
@@ -229,10 +223,6 @@ int AtomVecChBond::pack_comm(int n, int *list, double *buf,
       buf[m++] = f0[j][0];
       buf[m++] = f0[j][1];
       buf[m++] = f0[j][2];
-
-      buf[m++] = ffixb[j][0];
-      buf[m++] = ffixb[j][1];
-      buf[m++] = ffixb[j][2];
       
 
       buf[m++] = channel_width[j];
@@ -269,9 +259,6 @@ int AtomVecChBond::pack_comm(int n, int *list, double *buf,
       buf[m++] = f0[j][1];
       buf[m++] = f0[j][2];
 
-      buf[m++] = ffixb[j][0];
-      buf[m++] = ffixb[j][1];
-      buf[m++] = ffixb[j][2];
 
       buf[m++] = channel_width[j];
       buf[m++] = channel_width_old[j];
@@ -312,9 +299,6 @@ int AtomVecChBond::pack_comm_vel(int n, int *list, double *buf,
       buf[m++] = f0[j][1];
       buf[m++] = f0[j][2];
 
-      buf[m++] = ffixb[j][0];
-      buf[m++] = ffixb[j][1];
-      buf[m++] = ffixb[j][2];
 
       buf[m++] = channel_width[j];
       buf[m++] = channel_width_old[j];
@@ -352,9 +336,6 @@ int AtomVecChBond::pack_comm_vel(int n, int *list, double *buf,
 	buf[m++] = f0[j][1];
 	buf[m++] = f0[j][2];
 
-	buf[m++] = ffixb[j][0];
-	buf[m++] = ffixb[j][1];
-	buf[m++] = ffixb[j][2];
 
 	buf[m++] = channel_width[j];
 	buf[m++] = channel_width_old[j];
@@ -392,9 +373,6 @@ int AtomVecChBond::pack_comm_vel(int n, int *list, double *buf,
 	buf[m++] = f0[j][1];
 	buf[m++] = f0[j][2];
 
-	buf[m++] = ffixb[j][0];
-	buf[m++] = ffixb[j][1];
-	buf[m++] = ffixb[j][2];
 
 	buf[m++] = channel_width[j];
 	buf[m++] = channel_width_old[j];
@@ -430,9 +408,6 @@ void AtomVecChBond::unpack_comm(int n, int first, double *buf)
     f0[i][1] = buf[m++];
     f0[i][2] = buf[m++];
 
-    ffixb[i][0] = buf[m++];
-    ffixb[i][1] = buf[m++];
-    ffixb[i][2] = buf[m++];
 
     channel_width[i] = buf[m++];
     channel_width_old[i] = buf[m++];
@@ -469,9 +444,6 @@ void AtomVecChBond::unpack_comm_vel(int n, int first, double *buf)
     f0[i][1] = buf[m++];
     f0[i][2] = buf[m++];
 
-    ffixb[i][0] = buf[m++];
-    ffixb[i][1] = buf[m++];
-    ffixb[i][2] = buf[m++];
 
     channel_width[i] = buf[m++];
     channel_width_old[i] = buf[m++];
@@ -541,9 +513,6 @@ int AtomVecChBond::pack_border(int n, int *list, double *buf,
       buf[m++] = f0[j][1];
       buf[m++] = f0[j][2];
 
-      buf[m++] = ffixb[j][0];
-      buf[m++] = ffixb[j][1];
-      buf[m++] = ffixb[j][2];
 
       buf[m++] = tag[j];
       buf[m++] = type[j];
@@ -577,10 +546,6 @@ int AtomVecChBond::pack_border(int n, int *list, double *buf,
       buf[m++] = f0[j][0];
       buf[m++] = f0[j][1];
       buf[m++] = f0[j][2];
-
-      buf[m++] = ffixb[j][0];
-      buf[m++] = ffixb[j][1];
-      buf[m++] = ffixb[j][2];
 
       buf[m++] = tag[j];
       buf[m++] = type[j];
@@ -619,10 +584,6 @@ int AtomVecChBond::pack_border_vel(int n, int *list, double *buf,
       buf[m++] = f0[j][1];
       buf[m++] = f0[j][2];
 
-      buf[m++] = ffixb[j][0];
-      buf[m++] = ffixb[j][1];
-      buf[m++] = ffixb[j][2];
-
       buf[m++] = tag[j];
       buf[m++] = type[j];
       buf[m++] = mask[j];
@@ -660,10 +621,6 @@ int AtomVecChBond::pack_border_vel(int n, int *list, double *buf,
 	buf[m++] = f0[j][1];
 	buf[m++] = f0[j][2];
 
-	buf[m++] = ffixb[j][0];
-	buf[m++] = ffixb[j][1];
-	buf[m++] = ffixb[j][2];
-
         buf[m++] = tag[j];
         buf[m++] = type[j];
         buf[m++] = mask[j];
@@ -693,10 +650,6 @@ int AtomVecChBond::pack_border_vel(int n, int *list, double *buf,
 	buf[m++] = f0[j][0];
 	buf[m++] = f0[j][1];
 	buf[m++] = f0[j][2];
-
-	buf[m++] = ffixb[j][0];
-	buf[m++] = ffixb[j][1];
-	buf[m++] = ffixb[j][2];
 
         buf[m++] = tag[j];
         buf[m++] = type[j];
@@ -757,10 +710,6 @@ void AtomVecChBond::unpack_border(int n, int first, double *buf)
     f0[i][1] = buf[m++];
     f0[i][2] = buf[m++];
 
-    ffixb[i][0] = buf[m++];
-    ffixb[i][1] = buf[m++];
-    ffixb[i][2] = buf[m++];
-
     tag[i] = static_cast<int> (buf[m++]);
     type[i] = static_cast<int> (buf[m++]);
     mask[i] = static_cast<int> (buf[m++]);
@@ -793,10 +742,6 @@ void AtomVecChBond::unpack_border_vel(int n, int first, double *buf)
     f0[i][0] = buf[m++];
     f0[i][1] = buf[m++];
     f0[i][2] = buf[m++];
-
-    ffixb[i][0] = buf[m++];
-    ffixb[i][1] = buf[m++];
-    ffixb[i][2] = buf[m++];    
 
     tag[i] = static_cast<int> (buf[m++]);
     type[i] = static_cast<int> (buf[m++]);
@@ -856,10 +801,6 @@ int AtomVecChBond::pack_exchange(int i, double *buf)
   buf[m++] = f0[i][0];
   buf[m++] = f0[i][1];
   buf[m++] = f0[i][2];
-
-  buf[m++] = ffixb[i][0];
-  buf[m++] = ffixb[i][1];
-  buf[m++] = ffixb[i][2];
 
   buf[m++] = tag[i];
   buf[m++] = type[i];
@@ -939,10 +880,6 @@ int AtomVecChBond::unpack_exchange(double *buf)
   f0[nlocal][1] = buf[m++];
   f0[nlocal][2] = buf[m++];
 
-  ffixb[nlocal][0] = buf[m++];
-  ffixb[nlocal][1] = buf[m++];
-  ffixb[nlocal][2] = buf[m++];
-
   tag[nlocal] = static_cast<int> (buf[m++]);
   type[nlocal] = static_cast<int> (buf[m++]);
   mask[nlocal] = static_cast<int> (buf[m++]);
@@ -1000,7 +937,7 @@ int AtomVecChBond::size_restart()
   for (i = 0; i < nlocal; i++){
     //    n += 16 + 2*num_bond[i]; //13+3
     //    n += 17 + 3*num_bond0[i]; //13+3+1//13+x0,y0,z0+x1[3]+ f0[3]+ num_bond0 + channel_index +num_bond_rock_channel_atom +num_bond_channel_atom+channel_index[i],channel_neighbor_atom2,channel_neighbor_atom3,channel_neighbor_atom4, channel_width, channel_pressure
-    n += 31+ 5*num_bond[i];//6 lists, which include bond_type, channel_type,channel_width, channel_pressure,bond_atom,num_channel_neighbor, bond_rock_channel_atom, bond_channel_atom
+    n += 34+ 6*num_bond[i];//6 lists, which include bond_type, channel_type,channel_width, channel_pressure,bond_atom,num_channel_neighbor, bond_rock_channel_atom, bond_channel_atom
 
   }
   if (atom->nextra_restart)
@@ -1038,10 +975,6 @@ int AtomVecChBond::pack_restart(int i, double *buf)
   buf[m++] = f0[i][0];
   buf[m++] = f0[i][1];
   buf[m++] = f0[i][2];
-
-  buf[m++] = ffixb[i][0];
-  buf[m++] = ffixb[i][1];
-  buf[m++] = ffixb[i][2];
 
   buf[m++] = tag[i];
   buf[m++] = type[i];
@@ -1116,10 +1049,6 @@ int AtomVecChBond::unpack_restart(double *buf)
   f0[nlocal][1] = buf[m++];
   f0[nlocal][2] = buf[m++];
 
-  ffixb[nlocal][0] = buf[m++];
-  ffixb[nlocal][1] = buf[m++];
-  ffixb[nlocal][2] = buf[m++];
-
   tag[nlocal] = static_cast<int> (buf[m++]);
   type[nlocal] = static_cast<int> (buf[m++]);
   mask[nlocal] = static_cast<int> (buf[m++]);
@@ -1190,10 +1119,6 @@ void AtomVecChBond::create_atom(int itype, double *coord)
   f0[nlocal][1] = 0.0;
   f0[nlocal][2] = 0.0;
 
-  ffixb[nlocal][0] = 0.0;
-  ffixb[nlocal][1] = 0.0;
-  ffixb[nlocal][2] = 0.0;
-
   mask[nlocal] = 1;
   image[nlocal] = ((tagint) IMGMAX << IMG2BITS) |
     ((tagint) IMGMAX << IMGBITS) | IMGMAX;
@@ -1252,10 +1177,6 @@ void AtomVecChBond::data_atom(double *coord, tagint imagetmp, char **values)
   f0[nlocal][0] = 0.0;
   f0[nlocal][1] = 0.0;
   f0[nlocal][2] = 0.0;
-
-  ffixb[nlocal][0] = 0.0;
-  ffixb[nlocal][1] = 0.0;
-  ffixb[nlocal][2] = 0.0;
 
   image[nlocal] = imagetmp;
 
@@ -1375,7 +1296,6 @@ bigint AtomVecChBond::memory_usage()
   if (atom->memcheck("v")) bytes += memory->usage(v,nmax,3);
   if (atom->memcheck("f")) bytes += memory->usage(f,nmax*comm->nthreads,3);
   if (atom->memcheck("f0")) bytes += memory->usage(f0,nmax,3);
-  if (atom->memcheck("ffixb")) bytes += memory->usage(ffixb,nmax,3);
 
   if (atom->memcheck("molecule")) bytes += memory->usage(molecule,nmax);
   if (atom->memcheck("nspecial")) bytes += memory->usage(nspecial,nmax,3);

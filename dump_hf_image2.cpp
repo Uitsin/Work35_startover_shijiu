@@ -30,6 +30,8 @@
 #include "error.h"
 #include "memory.h"
 #include "types.h"
+#include "domain.h"
+#include "lattice.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -722,6 +724,7 @@ void DumpHfImage2::create_image()
     int check1[3];
     int ii;
 
+    double lattice_mag = domain->lattice->xlattice;
     
     m = 0;
     
@@ -754,13 +757,13 @@ void DumpHfImage2::create_image()
 	      corner1[1] = x0[channel_atomj][1];
 	      corner1[2] = x0[channel_atomj][2];
 	      
-	      check0[0] = (fmod(corner0[0], 1.0) == 0.5);
-	      check0[1] = (fmod(corner0[1], 1.0) == 0.5);
-	      check0[2] = (fmod(corner0[2], 1.0) == 0.5);
+	      check0[0] = (fmod(corner0[0], 1.0*lattice_mag) == 0.5*lattice_mag);
+	      check0[1] = (fmod(corner0[1], 1.0*lattice_mag) == 0.5*lattice_mag);
+	      check0[2] = (fmod(corner0[2], 1.0*lattice_mag) == 0.5*lattice_mag);
 	      
-	      check1[0] = (fmod(corner1[0], 1.0) == 0.5);
-	      check1[1] = (fmod(corner1[1], 1.0) == 0.5);
-	      check1[2] = (fmod(corner1[2], 1.0) == 0.5);
+	      check1[0] = (fmod(corner1[0], 1.0*lattice_mag) == 0.5*lattice_mag);
+	      check1[1] = (fmod(corner1[1], 1.0*lattice_mag) == 0.5*lattice_mag);
+	      check1[2] = (fmod(corner1[2], 1.0*lattice_mag) == 0.5*lattice_mag);
 	      
 	      mid[0] = 0.5 * (corner0[0] + corner1[0]);
 	      mid[1] = 0.5 * (corner0[1] + corner1[1]);
@@ -797,9 +800,9 @@ void DumpHfImage2::create_image()
 	  color = image->color2rgb("green");
 	}
 	boxcolor= image->color2rgb("red");
-	checkx = (fmod(x0[channel_atomi][0],1)==0.5);
-	checky = (fmod(x0[channel_atomi][1],1)==0.5);
-	checkz = (fmod(x0[channel_atomi][2],1)==0.5);
+	checkx = (fmod(x0[channel_atomi][0],1*lattice_mag)==0.5*lattice_mag);
+	checky = (fmod(x0[channel_atomi][1],1*lattice_mag)==0.5*lattice_mag);
+	checkz = (fmod(x0[channel_atomi][2],1*lattice_mag)==0.5*lattice_mag);
 
 	if (checkx ==1) {
 	  delx=1; dely=0; delz=0;

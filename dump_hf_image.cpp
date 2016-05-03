@@ -30,6 +30,8 @@
 #include "error.h"
 #include "memory.h"
 #include "types.h"
+#include "domain.h"
+#include "lattice.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -713,6 +715,8 @@ void DumpHfImage::create_image()
     int checkx, checky, checkz;	  
     int n1[3], n2[3], n3[3], n4[3] ;
 
+    double lattice_mag = domain->lattice->xlattice;
+
     
     m = 0;
     
@@ -725,9 +729,9 @@ void DumpHfImage::create_image()
 	    color = image->color2rgb("green");
 	  }
 	  boxcolor= image->color2rgb("red");
-   	  checkx = (fmod(x0[channel_atomi][0],1)==0.5);
-	  checky = (fmod(x0[channel_atomi][1],1)==0.5);
-	  checkz = (fmod(x0[channel_atomi][2],1)==0.5);
+   	  checkx = (fmod(x0[channel_atomi][0],1*lattice_mag)==0.5*lattice_mag);
+	  checky = (fmod(x0[channel_atomi][1],1*lattice_mag)==0.5*lattice_mag);
+	  checkz = (fmod(x0[channel_atomi][2],1*lattice_mag)==0.5*lattice_mag);
 
 	  if (checkx ==1) {
 	    delx=1; dely=0; delz=0;
@@ -762,21 +766,21 @@ void DumpHfImage::create_image()
 	  
 	  
 	  
-	  corner1[0] = corner0[0] + 0.5*n1[0];
-	  corner1[1] = corner0[1] + 0.5*n1[1];
-	  corner1[2] = corner0[2] + 0.5*n1[2];
+	  corner1[0] = corner0[0] + 0.5*lattice_mag*n1[0];
+	  corner1[1] = corner0[1] + 0.5*lattice_mag*n1[1];
+	  corner1[2] = corner0[2] + 0.5*lattice_mag*n1[2];
 	  
-	  corner2[0] = corner0[0] + 0.5*n2[0];
-	  corner2[1] = corner0[1] + 0.5*n2[1];
-	  corner2[2] = corner0[2] + 0.5*n2[2];
+	  corner2[0] = corner0[0] + 0.5*lattice_mag*n2[0];
+	  corner2[1] = corner0[1] + 0.5*lattice_mag*n2[1];
+	  corner2[2] = corner0[2] + 0.5*lattice_mag*n2[2];
 	  
-	  corner3[0] = corner0[0] + 0.5*n3[0];
-	  corner3[1] = corner0[1] + 0.5*n3[1];
-	  corner3[2] = corner0[2] + 0.5*n3[2];
+	  corner3[0] = corner0[0] + 0.5*lattice_mag*n3[0];
+	  corner3[1] = corner0[1] + 0.5*lattice_mag*n3[1];
+	  corner3[2] = corner0[2] + 0.5*lattice_mag*n3[2];
 	  
-	  corner4[0] = corner0[0] + 0.5*n4[0];
-	  corner4[1] = corner0[1] + 0.5*n4[1];
-	  corner4[2] = corner0[2] + 0.5*n4[2];
+	  corner4[0] = corner0[0] + 0.5*lattice_mag*n4[0];
+	  corner4[1] = corner0[1] + 0.5*lattice_mag*n4[1];
+	  corner4[2] = corner0[2] + 0.5*lattice_mag*n4[2];
 
 
 

@@ -744,7 +744,7 @@ void DumpHfImage2::create_image()
 	      //	      if (tag[channel_atomi] < tag[channel_atomj]) continue;
 	      color = image->color2rgb("green"); // green means isolated dry cracks
 	      boxcolor= image->color2rgb("green");
-	      diameter = 0.15;
+	      diameter = 0.15*lattice_mag;
 	      if (atom_type[channel_atomi] == CONNECTED_CHANNEL_ATOM_TYPE) {
 		boxcolor= image->color2rgb("blue");
 	      }
@@ -795,7 +795,7 @@ void DumpHfImage2::create_image()
       else{
 
 	color = image->color2rgb("blue");
-	diameter = 0.15;
+	diameter = 0.15*lattice_mag;
 	if (atom_type[channel_atomi] == ISOLATED_CHANNEL_ATOM_TYPE){
 	  color = image->color2rgb("green");
 	}

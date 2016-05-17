@@ -169,9 +169,9 @@ void BondChannelChannel::command(int narg, char **arg)
       yj = x0[channel_atomj][1];
       zj = x0[channel_atomj][2];
       
-      if ( fabs(fmod(xi,1.0*lattice_mag)-0.5*lattice_mag) < 1.e-6) {Ctype = 1;}
-      else if ( fabs(fmod(yi,1.0*lattice_mag)-0.5*lattice_mag) < 1.e-6) {Ctype = 2;}
-      else if ( fabs(fmod(zi,1.0*lattice_mag)-0.5*lattice_mag) < 1.e-6) {Ctype = 3;}
+      if ( fabs(fmod(xi,lattice_mag)-0.5*lattice_mag) < 1.e-6*lattice_mag) {Ctype = 1;}
+      else if ( fabs(fmod(yi,lattice_mag)-0.5*lattice_mag) < 1.e-6*lattice_mag) {Ctype = 2;}
+      else if ( fabs(fmod(zi,lattice_mag)-0.5*lattice_mag) < 1.e-6*lattice_mag) {Ctype = 3;}
       else {Ctype = -FAKE_INT_VALUE; fprintf(screen, "Something Wrong!!!\n");}
 
       cond0=0; cond1=0; cond2=0; cond3=0; cond4=0; cond5=0;

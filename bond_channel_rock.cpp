@@ -104,17 +104,17 @@ void BondChannelRock::command(int narg, char **arg)
       zj = x0[atomj][2];
       
 
-      if (fabs(fmod(xi,1.0*lattice_mag)-0.5*lattice_mag) < 1.e-3){
-	cond0 = ( (fabs(xj - (xi - 0.5*lattice_mag))<1.e-3) && (fabs(yj - yi) < 1.e-3) && (fabs(zj - zi)<1.e-3) );  // first neighbor 
-	cond1 = ( (fabs(xj - (xi + 0.5*lattice_mag))<1.e-3) && (fabs(yj - yi) < 1.e-3) && (fabs(zj - zi)<1.e-3) );  
+      if (fabs(fmod(xi,lattice_mag)-0.5*lattice_mag) < 1.e-3*lattice_mag){
+	cond0 = ( (fabs(xj - (xi - 0.5*lattice_mag))<1.e-3*lattice_mag) && (fabs(yj - yi) < 1.e-3*lattice_mag) && (fabs(zj - zi)<1.e-3*lattice_mag) );  // first neighbor 
+	cond1 = ( (fabs(xj - (xi + 0.5*lattice_mag))<1.e-3*lattice_mag) && (fabs(yj - yi) < 1.e-3*lattice_mag) && (fabs(zj - zi)<1.e-3*lattice_mag) );  
       }
-      else if (fabs(fmod(yi,1.0*lattice_mag)-0.5*lattice_mag) < 1.e-3){
-	cond0 = ( (fabs(xj - xi)<1.e-3) && (fabs(yj - (yi - 0.5*lattice_mag)) < 1.e-3) && (fabs(zj - zi)<1.e-3) );  
-	cond1 = ( (fabs(xj - xi)<1.e-3) && (fabs(yj - (yi + 0.5*lattice_mag)) < 1.e-3) && (fabs(zj - zi)<1.e-3) ); 
+      else if (fabs(fmod(yi,lattice_mag)-0.5*lattice_mag) < 1.e-3*lattice_mag){
+	cond0 = ( (fabs(xj - xi)<1.e-3*lattice_mag) && (fabs(yj - (yi - 0.5*lattice_mag)) < 1.e-3*lattice_mag) && (fabs(zj - zi)<1.e-3*lattice_mag) );  
+	cond1 = ( (fabs(xj - xi)<1.e-3*lattice_mag) && (fabs(yj - (yi + 0.5*lattice_mag)) < 1.e-3*lattice_mag) && (fabs(zj - zi)<1.e-3*lattice_mag) ); 
       }
-      else if (fabs(fmod(zi,1.0*lattice_mag)-0.5*lattice_mag) < 1.e-3){
-	cond0 = ( (fabs(xj - xi)<1.e-3) && (fabs(yj - yi) < 1.e-3) && (fabs(zj -(zi - 0.5*lattice_mag)) <1.e-3) );  
-	cond1 = ( (fabs(xj - xi)<1.e-3) && (fabs(yj - yi) < 1.e-3) && (fabs(zj -(zi + 0.5*lattice_mag)) <1.e-3) ); 
+      else if (fabs(fmod(zi,lattice_mag)-0.5*lattice_mag) < 1.e-3*lattice_mag){
+	cond0 = ( (fabs(xj - xi)<1.e-3*lattice_mag) && (fabs(yj - yi) < 1.e-3*lattice_mag) && (fabs(zj -(zi - 0.5*lattice_mag)) <1.e-3*lattice_mag) );  
+	cond1 = ( (fabs(xj - xi)<1.e-3*lattice_mag) && (fabs(yj - yi) < 1.e-3*lattice_mag) && (fabs(zj -(zi + 0.5*lattice_mag)) <1.e-3*lattice_mag) ); 
       }
 
       

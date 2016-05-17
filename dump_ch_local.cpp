@@ -35,6 +35,8 @@ enum{INT,DOUBLE};
 DumpChLocal::DumpChLocal(LAMMPS *lmp, int narg, char **arg) :
   Dump(lmp, narg, arg)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-DumpChLocal\n", (update->dt)*(update->ntimestep) );
+
   if (narg == 5) error->all(FLERR,"No dump local arguments specified");
 
   clearstep = 1;
@@ -100,6 +102,8 @@ DumpChLocal::DumpChLocal(LAMMPS *lmp, int narg, char **arg) :
 
 DumpChLocal::~DumpChLocal()
 {
+  fprintf(screen, "t= %f sec, dump_ch_local   ~DumpChLocal\n", (update->dt)*(update->ntimestep) );
+
   delete [] pack_choice;
   delete [] vtype;
   delete [] field2index;
@@ -124,6 +128,8 @@ DumpChLocal::~DumpChLocal()
 
 void DumpChLocal::init_style()
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-init_style\n", (update->dt)*(update->ntimestep) );
+
   if (sort_flag && sortcol == 0)
     error->all(FLERR,"Dump local cannot sort by atom ID");
 
@@ -176,6 +182,8 @@ void DumpChLocal::init_style()
 
 int DumpChLocal::modify_param(int narg, char **arg)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-modify_param\n", (update->dt)*(update->ntimestep) );
+
   if (strcmp(arg[0],"label") == 0) {
     if (narg < 2) error->all(FLERR,"Illegal dump_modify command");
     delete [] label;
@@ -191,6 +199,8 @@ int DumpChLocal::modify_param(int narg, char **arg)
 
 void DumpChLocal::write_header(bigint ndump)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-write_header\n", (update->dt)*(update->ntimestep) );
+
   //  if (me == 0){
   //    fprintf(fp,"ITEM: NUMBER OF %s\n",label);
   //  }
@@ -221,6 +231,8 @@ void DumpChLocal::write_header(bigint ndump)
 
 int DumpChLocal::count()
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-count\n", (update->dt)*(update->ntimestep) );
+
   int i;
 
   // invoke Computes for local quantities
@@ -260,6 +272,8 @@ int DumpChLocal::count()
 
 void DumpChLocal::pack(int *dummy)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-pack\n", (update->dt)*(update->ntimestep) );
+
   for (int n = 0; n < size_one; n++) (this->*pack_choice[n])(n);
 }
 
@@ -267,6 +281,8 @@ void DumpChLocal::pack(int *dummy)
 
 void DumpChLocal::write_data(int n, double *mybuf)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-write_data\n", (update->dt)*(update->ntimestep) );
+
   int i,j;
 
   int m = 0;
@@ -284,6 +300,8 @@ void DumpChLocal::write_data(int n, double *mybuf)
 
 void DumpChLocal::parse_fields(int narg, char **arg)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-parse_fields\n", (update->dt)*(update->ntimestep) );
+
   int computefixflag = 0;
 
   // customize by adding to if statement
@@ -381,6 +399,8 @@ void DumpChLocal::parse_fields(int narg, char **arg)
 
 int DumpChLocal::add_compute(char *id)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-add_compute\n", (update->dt)*(update->ntimestep) );
+
   int icompute;
   for (icompute = 0; icompute < ncompute; icompute++)
     if (strcmp(id,id_compute[icompute]) == 0) break;
@@ -406,6 +426,8 @@ int DumpChLocal::add_compute(char *id)
 
 int DumpChLocal::add_fix(char *id)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-add_fix\n", (update->dt)*(update->ntimestep) );
+
   int ifix;
   for (ifix = 0; ifix < nfix; ifix++)
     if (strcmp(id,id_fix[ifix]) == 0) break;
@@ -429,6 +451,8 @@ int DumpChLocal::add_fix(char *id)
 
 void DumpChLocal::pack_compute(int n)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-pack_compute\n", (update->dt)*(update->ntimestep) );
+
   double *vector = compute[field2index[n]]->vector_local;
   double **array = compute[field2index[n]]->array_local;
   int ncount = compute[field2index[n]]->size_local_rows;
@@ -452,6 +476,8 @@ void DumpChLocal::pack_compute(int n)
 
 void DumpChLocal::pack_fix(int n)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-pack_fix\n", (update->dt)*(update->ntimestep) );
+
   double *vector = fix[field2index[n]]->vector_local;
   double **array = fix[field2index[n]]->array_local;
   int index = argindex[n];
@@ -480,6 +506,8 @@ void DumpChLocal::pack_fix(int n)
 
 void DumpChLocal::pack_index(int n)
 {
+  fprintf(screen, "t= %f sec, dump_ch_local-pack_index\n", (update->dt)*(update->ntimestep) );
+
   int index;
   MPI_Scan(&nmine,&index,1,MPI_INT,MPI_SUM,world);
   index -= nmine;

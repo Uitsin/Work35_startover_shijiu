@@ -32,6 +32,7 @@
 #include "types.h"
 #include "domain.h"
 #include "lattice.h"
+#include "update.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -47,6 +48,9 @@ enum{NO,YES};
 DumpHfImage::DumpHfImage(LAMMPS *lmp, int narg, char **arg) :
   DumpCustom(lmp, narg, arg)
 {
+  
+  fprintf(screen, "t= %f sec, DumpHfImage\n", (update->dt)*(update->ntimestep) );
+
   if (binary || multiproc) error->all(FLERR,"Invalid dump image filename");
 
   // force binary flag on to avoid corrupted output on Windows
@@ -131,6 +135,11 @@ DumpHfImage::DumpHfImage(LAMMPS *lmp, int narg, char **arg) :
 
   int iarg = ioptional;
   while (iarg < narg) {
+
+
+    ///////
+    fprintf(screen, "while (iarg < narg)\n" );
+    ///////
 
     //user-hf defined variables 
     if (strcmp(arg[iarg],"bond_factor") == 0) {
@@ -410,6 +419,9 @@ DumpHfImage::DumpHfImage(LAMMPS *lmp, int narg, char **arg) :
 
 DumpHfImage::~DumpHfImage()
 {
+  
+  fprintf(screen, "t= %f sec, ~DumpHfImage\n", (update->dt)*(update->ntimestep) );
+
   delete image;
 
   delete [] diamtype;
@@ -426,6 +438,8 @@ DumpHfImage::~DumpHfImage()
 
 void DumpHfImage::init_style()
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-init_style\n", (update->dt)*(update->ntimestep) );
+
   if (multifile == 0 && !multifile_override)
     error->all(FLERR,"Dump image requires one snapshot per file");
   if (sort_flag) error->all(FLERR,"Dump image cannot perform sorting");
@@ -528,6 +542,8 @@ void DumpHfImage::init_style()
 
 void DumpHfImage::write()
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-write\n", (update->dt)*(update->ntimestep) );
+
   // open new file
 
   openfile();
@@ -575,7 +591,14 @@ void DumpHfImage::write()
 
   image->clear();
   create_image();
+
+  //FPF 
+
+  fprintf(screen, "t= %f sec, done create_image()\n", (update->dt)*(update->ntimestep) );
+  
   image->merge();
+  //FPF
+  fprintf(screen, "t= %f sec, done image->merge()\n", (update->dt)*(update->ntimestep) );
 
   // write image file
 
@@ -588,6 +611,9 @@ void DumpHfImage::write()
       fp = NULL;
     }
   }
+  //FPF
+  fprintf(screen, "t= %f sec, done if(me == 0)\t %f \n", (update->dt)*(update->ntimestep), me );
+
 }
 
 /* ----------------------------------------------------------------------
@@ -596,6 +622,8 @@ void DumpHfImage::write()
 
 void DumpHfImage::box_bounds()
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-box_bounds\n", (update->dt)*(update->ntimestep) );
+
   if (domain->triclinic == 0) {
     boxxlo = domain->boxlo[0];
     boxxhi = domain->boxhi[0];
@@ -624,6 +652,8 @@ void DumpHfImage::box_bounds()
 
 void DumpHfImage::box_center()
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-box_center\n", (update->dt)*(update->ntimestep) );
+
   if (cxstr) cx = input->variable->compute_equal(cxvar);
   if (cystr) cy = input->variable->compute_equal(cyvar);
   if (czstr) cz = input->variable->compute_equal(czvar);
@@ -641,6 +671,8 @@ void DumpHfImage::box_center()
 
 void DumpHfImage::view_params()
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-view_params\n", (update->dt)*(update->ntimestep) );
+
   // view direction theta and phi
 
   if (thetastr) {
@@ -682,6 +714,8 @@ void DumpHfImage::view_params()
 
 void DumpHfImage::create_image()
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-create_image\n", (update->dt)*(update->ntimestep) );
+
   int i,j,m,n,itype,atom1,atom2,imol,iatom,btype;
   tagint tagprev;
   double diameter,delx,dely,delz;
@@ -724,14 +758,16 @@ void DumpHfImage::create_image()
       channel_atomi = clist[i];
       if (atom_type[channel_atomi] == CONNECTED_CHANNEL_ATOM_TYPE || atom_type[channel_atomi] == ISOLATED_CHANNEL_ATOM_TYPE) {
 	  color = image->color2rgb("blue");
-	  diameter = 0.15;
+	  diameter = 0.15*lattice_mag;
 	  if (atom_type[channel_atomi] == ISOLATED_CHANNEL_ATOM_TYPE){
 	    color = image->color2rgb("green");
 	  }
 	  boxcolor= image->color2rgb("red");
-   	  checkx = (fmod(x0[channel_atomi][0],1*lattice_mag)==0.5*lattice_mag);
-	  checky = (fmod(x0[channel_atomi][1],1*lattice_mag)==0.5*lattice_mag);
-	  checkz = (fmod(x0[channel_atomi][2],1*lattice_mag)==0.5*lattice_mag);
+   	  checkx = (fabs(fmod(x0[channel_atomi][0],lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag );
+	  checky = (fabs(fmod(x0[channel_atomi][1],lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag );
+	  checkz = (fabs(fmod(x0[channel_atomi][2],lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag );
+
+	  fprintf(screen, "t= %f sec, lattice_mag = %f \t x0 = (%f, %f, %f) \t checkxyz = (%d, %d, %d) \n", (update->dt)*(update->ntimestep), lattice_mag, x0[channel_atomi][0], x0[channel_atomi][1], x0[channel_atomi][2], checkx, checky, checkz );	
 
 	  if (checkx ==1) {
 	    delx=1; dely=0; delz=0;
@@ -756,6 +792,11 @@ void DumpHfImage::create_image()
 	    n4[0]=-1; n4[1]=-1; n4[2]=0;
 	  }
 
+	  //FPF
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t n-vectors finished assigned \n", (update->dt)*(update->ntimestep) );
+
+	  fprintf(screen, "t= %f sec, n1 = (%d, %d, %d)  n2 = (%d, %d, %d)  n3 = (%d, %d, %d)  n4 = (%d, %d, %d)\n", (update->dt)*(update->ntimestep), n1[0], n1[1], n1[2], n2[0], n2[1], n2[2], n3[0], n3[1], n3[2], n4[0], n4[1], n4[2]);
+
 	  //	  mean_width = 0.5(channel_width[channel_atomi] +channel_width[channel_atomj]);
 	  width = channel_width[channel_atomi];
 	  if (width < 1.e-6){width = 1.e-6;}
@@ -764,42 +805,60 @@ void DumpHfImage::create_image()
 	  corner0[1] = x[channel_atomi][1]+ 0.5*dely *width*mag_factor;
 	  corner0[2] = x[channel_atomi][2]+ 0.5*delz *width*mag_factor;
 	  
-	  
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner0 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner0[0], corner0[1], corner0[2] );	  
+
+	  fprintf(screen, "t= %f sec, mag_factor = %f \t width = %f \t x = (%f, %f, %f) \t delxyz = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), mag_factor, width, x[channel_atomi][0], x[channel_atomi][1], x[channel_atomi][2], delx, dely, delz );	
 	  
 	  corner1[0] = corner0[0] + 0.5*lattice_mag*n1[0];
 	  corner1[1] = corner0[1] + 0.5*lattice_mag*n1[1];
 	  corner1[2] = corner0[2] + 0.5*lattice_mag*n1[2];
+
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner1 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner1[0], corner1[1], corner1[2] );	
 	  
 	  corner2[0] = corner0[0] + 0.5*lattice_mag*n2[0];
 	  corner2[1] = corner0[1] + 0.5*lattice_mag*n2[1];
 	  corner2[2] = corner0[2] + 0.5*lattice_mag*n2[2];
+
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner2 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner2[0], corner2[1], corner2[2] );	
 	  
 	  corner3[0] = corner0[0] + 0.5*lattice_mag*n3[0];
 	  corner3[1] = corner0[1] + 0.5*lattice_mag*n3[1];
 	  corner3[2] = corner0[2] + 0.5*lattice_mag*n3[2];
 	  
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner3 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner3[0], corner3[1], corner3[2] );	
+
 	  corner4[0] = corner0[0] + 0.5*lattice_mag*n4[0];
 	  corner4[1] = corner0[1] + 0.5*lattice_mag*n4[1];
 	  corner4[2] = corner0[2] + 0.5*lattice_mag*n4[2];
 
-
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner4 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner4[0], corner4[1], corner4[2] );	
 
 	  corner5[0] = corner1[0] -delx *width*mag_factor; 
 	  corner5[1] = corner1[1] -dely *width*mag_factor; 
 	  corner5[2] = corner1[2] -delz *width*mag_factor; 
 
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner5 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner5[0], corner5[1], corner5[2] );	
+
 	  corner6[0] = corner2[0] -delx *width*mag_factor; 
 	  corner6[1] = corner2[1] -dely *width*mag_factor; 
 	  corner6[2] = corner2[2] -delz *width*mag_factor; 
+
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner6 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner6[0], corner6[1], corner6[2] );	
 
 	  corner7[0] = corner3[0] -delx *width*mag_factor; 
 	  corner7[1] = corner3[1] -dely *width*mag_factor; 
 	  corner7[2] = corner3[2] -delz *width*mag_factor; 
 
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner7 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner7[0], corner7[1], corner7[2] );	
+
 	  corner8[0] = corner4[0] -delx *width*mag_factor; 
 	  corner8[1] = corner4[1] -dely *width*mag_factor; 
 	  corner8[2] = corner4[2] -delz *width*mag_factor; 
 
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner8 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner8[0], corner8[1], corner8[2] );	
+
+	  // FPF
+	  fprintf(screen, "t= %f sec, dump_hf_image-crate_image \t corners done assigned\n", (update->dt)*(update->ntimestep) );
 
 	  image->draw_triangle(corner3, corner4, corner2, color);
 	  image->draw_triangle(corner3, corner1, corner2, color);
@@ -819,7 +878,9 @@ void DumpHfImage::create_image()
 	  image->draw_triangle(corner4, corner8, corner6, color);
 	  image->draw_triangle(corner4, corner2, corner6, color);
 
-	  
+	  //FPF
+	  fprintf(screen, "t= %f sec, dump_hf_image-crate_image \t draw_triagnles done \n", (update->dt)*(update->ntimestep) );
+
 	  image->draw_cylinder(corner1,corner2,boxcolor,diameter,3);
 	  image->draw_cylinder(corner3,corner4,boxcolor,diameter,3);
 	  image->draw_cylinder(corner1,corner3,boxcolor,diameter,3);
@@ -833,6 +894,9 @@ void DumpHfImage::create_image()
 	  image->draw_cylinder(corner5,corner7,boxcolor,diameter,3);
 	  image->draw_cylinder(corner6,corner8,boxcolor,diameter,3);
 	m += size_one;
+
+	  //FPF
+	  fprintf(screen, "t= %f sec, dump_hf_image-crate_image \T draw_cylinder done \n", (update->dt)*(update->ntimestep) );
       }
       
     }
@@ -1212,6 +1276,8 @@ void DumpHfImage::create_image()
 int DumpHfImage::pack_forward_comm(int n, int *list, double *buf, 
                                  int pbc_flag, int *pbc)
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-pack_forward_comm\n", (update->dt)*(update->ntimestep) );
+
   int i,j,m;
 
   m = 0;
@@ -1237,6 +1303,8 @@ int DumpHfImage::pack_forward_comm(int n, int *list, double *buf,
 
 void DumpHfImage::unpack_forward_comm(int n, int first, double *buf)
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-unpack_forward_comm\n", (update->dt)*(update->ntimestep) );
+
   int i,m,last;
 
   m = 0;
@@ -1257,6 +1325,8 @@ void DumpHfImage::unpack_forward_comm(int n, int first, double *buf)
 
 int DumpHfImage::modify_param(int narg, char **arg)
 {
+  fprintf(screen, "t= %f sec, dump_hf_image-modify_param\n", (update->dt)*(update->ntimestep) );
+
   int n = DumpCustom::modify_param(narg,arg);
   if (n) return n;
 
@@ -1271,13 +1341,23 @@ int DumpHfImage::modify_param(int narg, char **arg)
     char *nextptr;
     char *ptr = arg[2];
     while ((nextptr = strchr(ptr,'/'))) {
+
+    ///////
+      fprintf( screen, "while ((nextptr = strchr(ptr,'/')))");
+    ///////
+
       ptr = nextptr + 1;
       ncount++;
     }
     char **ptrs = new char*[ncount+1];
     ncount = 0;
     ptrs[ncount++] = strtok(arg[2],"/");
-    while ((ptrs[ncount++] = strtok(NULL,"/")));
+
+    //////
+    while ((ptrs[ncount++] = strtok(NULL,"/"))){fprintf(screen, "while A \n");}
+    //////
+
+
     ncount--;
 
     // assign each of ncount colors in round-robin fashion to types
@@ -1331,13 +1411,18 @@ int DumpHfImage::modify_param(int narg, char **arg)
     char *nextptr;
     char *ptr = arg[2];
     while ((nextptr = strchr(ptr,'/'))) {
+
+      ////////
+      fprintf( screen, "while ((nextptr = strchr(ptr,'/')))" );
+      ////////
+
       ptr = nextptr + 1;
       ncount++;
     }
     char **ptrs = new char*[ncount+1];
     ncount = 0;
     ptrs[ncount++] = strtok(arg[2],"/");
-    while ((ptrs[ncount++] = strtok(NULL,"/")));
+    while ((ptrs[ncount++] = strtok(NULL,"/"))){fprintf (screen,"while B \n");}
     ncount--;
 
     // assign each of ncount colors in round-robin fashion to types

@@ -32,6 +32,7 @@
 #include "types.h"
 #include "domain.h"
 #include "lattice.h"
+#include "update.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -47,6 +48,8 @@ enum{NO,YES};
 DumpHfImage2::DumpHfImage2(LAMMPS *lmp, int narg, char **arg) :
   DumpCustom(lmp, narg, arg)
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-DumpHfImage2\n", (update->dt)*(update->ntimestep) );
+
   if (binary || multiproc) error->all(FLERR,"Invalid dump image filename");
 
   // force binary flag on to avoid corrupted output on Windows
@@ -415,6 +418,8 @@ DumpHfImage2::DumpHfImage2(LAMMPS *lmp, int narg, char **arg) :
 
 DumpHfImage2::~DumpHfImage2()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image   ~DumpHfImage2\n", (update->dt)*(update->ntimestep) );
+
   delete image;
 
   delete [] diamtype;
@@ -431,6 +436,8 @@ DumpHfImage2::~DumpHfImage2()
 
 void DumpHfImage2::init_style()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-init_style\n", (update->dt)*(update->ntimestep) );
+
   if (multifile == 0 && !multifile_override)
     error->all(FLERR,"Dump image requires one snapshot per file");
   if (sort_flag) error->all(FLERR,"Dump image cannot perform sorting");
@@ -533,6 +540,8 @@ void DumpHfImage2::init_style()
 
 void DumpHfImage2::write()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-write\n", (update->dt)*(update->ntimestep) );
+
   // open new file
 
   openfile();
@@ -601,6 +610,8 @@ void DumpHfImage2::write()
 
 void DumpHfImage2::box_bounds()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-box_bounds\n", (update->dt)*(update->ntimestep) );
+
   if (domain->triclinic == 0) {
     boxxlo = domain->boxlo[0];
     boxxhi = domain->boxhi[0];
@@ -629,6 +640,8 @@ void DumpHfImage2::box_bounds()
 
 void DumpHfImage2::box_center()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-box_center\n", (update->dt)*(update->ntimestep) );
+
   if (cxstr) cx = input->variable->compute_equal(cxvar);
   if (cystr) cy = input->variable->compute_equal(cyvar);
   if (czstr) cz = input->variable->compute_equal(czvar);
@@ -646,6 +659,8 @@ void DumpHfImage2::box_center()
 
 void DumpHfImage2::view_params()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-view_params\n", (update->dt)*(update->ntimestep) );
+
   // view direction theta and phi
 
   if (thetastr) {
@@ -687,6 +702,8 @@ void DumpHfImage2::view_params()
 
 void DumpHfImage2::create_image()
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-create_image\n", (update->dt)*(update->ntimestep) );
+
   int i,j,m,n,itype,atom1,atom2,imol,iatom,btype;
   tagint tagprev;
   double diameter,delx,dely,delz;
@@ -753,18 +770,26 @@ void DumpHfImage2::create_image()
 	      corner0[1] = x0[channel_atomi][1];
 	      corner0[2] = x0[channel_atomi][2];
 	      
+	      fprintf(screen, "t= %f sec, dump_hf_image-create_image \t Beginning corner0 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner0[0], corner0[1], corner0[2] );
+
 	      corner1[0] = x0[channel_atomj][0];
 	      corner1[1] = x0[channel_atomj][1];
 	      corner1[2] = x0[channel_atomj][2];
+
+	      fprintf(screen, "t= %f sec, dump_hf_image-create_image \t Beginning corner1 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner1[0], corner1[1], corner1[2] );
 	      
-	      check0[0] = (fmod(corner0[0], 1.0*lattice_mag) == 0.5*lattice_mag);
-	      check0[1] = (fmod(corner0[1], 1.0*lattice_mag) == 0.5*lattice_mag);
-	      check0[2] = (fmod(corner0[2], 1.0*lattice_mag) == 0.5*lattice_mag);
+	      check0[0] = (fabs(fmod(corner0[0], lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag);
+	      check0[1] = (fabs(fmod(corner0[1], lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag);
+	      check0[2] = (fabs(fmod(corner0[2], lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag);
+
+	      fprintf(screen, "t= %f sec, dump_hf_image-create_image \t check0 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), check0[0], check0[1], check0[2] );
+		      
+	      check1[0] = (fabs(fmod(corner1[0], lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag);
+	      check1[1] = (fabs(fmod(corner1[1], lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag);
+	      check1[2] = (fabs(fmod(corner1[2], lattice_mag) - 0.5*lattice_mag) < 1e-3*lattice_mag);
 	      
-	      check1[0] = (fmod(corner1[0], 1.0*lattice_mag) == 0.5*lattice_mag);
-	      check1[1] = (fmod(corner1[1], 1.0*lattice_mag) == 0.5*lattice_mag);
-	      check1[2] = (fmod(corner1[2], 1.0*lattice_mag) == 0.5*lattice_mag);
-	      
+	      fprintf(screen, "t= %f sec, dump_hf_image-create_image \t check1 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), check1[0], check1[1], check1[2] );
+
 	      mid[0] = 0.5 * (corner0[0] + corner1[0]);
 	      mid[1] = 0.5 * (corner0[1] + corner1[1]);
 	      mid[2] = 0.5 * (corner0[2] + corner1[2]);
@@ -787,6 +812,9 @@ void DumpHfImage2::create_image()
 	      }
 	      image->draw_cylinder(corner0,mid,boxcolor,diameter,3);
 	      image->draw_cylinder(mid,corner1,boxcolor,diameter,3);
+
+	      fprintf(screen, "t= %f sec, dump_hf_image-create_image \t mid = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), mid[0], mid[1], mid[2] );
+	
 	    }
 	  }
 	}
@@ -800,9 +828,11 @@ void DumpHfImage2::create_image()
 	  color = image->color2rgb("green");
 	}
 	boxcolor= image->color2rgb("red");
-	checkx = (fmod(x0[channel_atomi][0],1*lattice_mag)==0.5*lattice_mag);
-	checky = (fmod(x0[channel_atomi][1],1*lattice_mag)==0.5*lattice_mag);
-	checkz = (fmod(x0[channel_atomi][2],1*lattice_mag)==0.5*lattice_mag);
+	checkx = (fabs(fmod(x0[channel_atomi][0],lattice_mag)-0.5*lattice_mag) < 1e-3*lattice_mag);
+	checky = (fabs(fmod(x0[channel_atomi][1],lattice_mag)-0.5*lattice_mag) < 1e-3*lattice_mag);
+	checkz = (fabs(fmod(x0[channel_atomi][2],lattice_mag)-0.5*lattice_mag) < 1e-3*lattice_mag);
+
+	  fprintf(screen, "t= %f sec, lattice_mag = %f \t x0 = (%f, %f, %f) \t checkxyz = (%d, %d, %d) \n", (update->dt)*(update->ntimestep), lattice_mag, x0[channel_atomi][0], x0[channel_atomi][1], x0[channel_atomi][2], checkx, checky, checkz );
 
 	if (checkx ==1) {
 	  delx=1; dely=0; delz=0;
@@ -827,6 +857,10 @@ void DumpHfImage2::create_image()
 	  n4[0]=-1; n4[1]=-1; n4[2]=0;
 	}
 
+	  fprintf(screen, "t= %f sec, dump_hf_image-create_image \t n-vectors finished assigned \n", (update->dt)*(update->ntimestep) );
+
+	  fprintf(screen, "t= %f sec, n1 = (%d, %d, %d)  n2 = (%d, %d, %d)  n3 = (%d, %d, %d)  n4 = (%d, %d, %d)\n", (update->dt)*(update->ntimestep), n1[0], n1[1], n1[2], n2[0], n2[1], n2[2], n3[0], n3[1], n3[2], n4[0], n4[1], n4[2]);
+
 	  //	  mean_width = 0.5(channel_width[channel_atomi] +channel_width[channel_atomj]);
 	  //	  width = channel_width[channel_atomi];
 	  //	  if (width < 1.e-6){width = 1.e-6;}
@@ -835,23 +869,34 @@ void DumpHfImage2::create_image()
 	corner0[1] = x[channel_atomi][1]+ 0.5*dely *width*mag_factor;
 	corner0[2] = x[channel_atomi][2]+ 0.5*delz *width*mag_factor;
 	
+	fprintf(screen, "t= %f sec, mag_factor = %f \t width = %f \t x = (%f, %f, %f) \t delxyz = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), mag_factor, width, x[channel_atomi][0], x[channel_atomi][1], x[channel_atomi][2], delx, dely, delz );	
+	  
+
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner0 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner0[0], corner0[1], corner0[2] );
 	
-	
-	corner1[0] = corner0[0] + 0.5*n1[0];
-	corner1[1] = corner0[1] + 0.5*n1[1];
-	corner1[2] = corner0[2] + 0.5*n1[2];
+	corner1[0] = corner0[0] + 0.5*n1[0]*lattice_mag;
+	corner1[1] = corner0[1] + 0.5*n1[1]*lattice_mag;
+	corner1[2] = corner0[2] + 0.5*n1[2]*lattice_mag;
+
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner1 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner1[0], corner1[1], corner1[2] );
 	  
-	corner2[0] = corner0[0] + 0.5*n2[0];
-	corner2[1] = corner0[1] + 0.5*n2[1];
-	corner2[2] = corner0[2] + 0.5*n2[2];
+	corner2[0] = corner0[0] + 0.5*n2[0]*lattice_mag;
+	corner2[1] = corner0[1] + 0.5*n2[1]*lattice_mag;
+	corner2[2] = corner0[2] + 0.5*n2[2]*lattice_mag;
+
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner2 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner2[0], corner2[1], corner2[2] );
 	  
-	corner3[0] = corner0[0] + 0.5*n3[0];
-	corner3[1] = corner0[1] + 0.5*n3[1];
-	corner3[2] = corner0[2] + 0.5*n3[2];
+	corner3[0] = corner0[0] + 0.5*n3[0]*lattice_mag;
+	corner3[1] = corner0[1] + 0.5*n3[1]*lattice_mag;
+	corner3[2] = corner0[2] + 0.5*n3[2]*lattice_mag;
+
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner3 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner3[0], corner3[1], corner3[2] );
 	  
-	corner4[0] = corner0[0] + 0.5*n4[0];
-	corner4[1] = corner0[1] + 0.5*n4[1];
-	corner4[2] = corner0[2] + 0.5*n4[2];
+	corner4[0] = corner0[0] + 0.5*n4[0]*lattice_mag;
+	corner4[1] = corner0[1] + 0.5*n4[1]*lattice_mag;
+	corner4[2] = corner0[2] + 0.5*n4[2]*lattice_mag;
+
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner4 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner4[0], corner4[1], corner4[2] );
 
 
 
@@ -859,18 +904,28 @@ void DumpHfImage2::create_image()
 	corner5[1] = corner1[1] -dely *width*mag_factor; 
 	corner5[2] = corner1[2] -delz *width*mag_factor; 
 
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner5 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner5[0], corner5[1], corner5[2] );
+
 	corner6[0] = corner2[0] -delx *width*mag_factor; 
 	corner6[1] = corner2[1] -dely *width*mag_factor; 
 	corner6[2] = corner2[2] -delz *width*mag_factor; 
+
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner6 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner6[0], corner6[1], corner6[2] );
 
 	corner7[0] = corner3[0] -delx *width*mag_factor; 
 	corner7[1] = corner3[1] -dely *width*mag_factor; 
 	corner7[2] = corner3[2] -delz *width*mag_factor; 
 
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner7 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner7[0], corner7[1], corner7[2] );
+
 	corner8[0] = corner4[0] -delx *width*mag_factor; 
 	corner8[1] = corner4[1] -dely *width*mag_factor; 
 	corner8[2] = corner4[2] -delz *width*mag_factor; 
 
+        fprintf(screen, "t= %f sec, dump_hf_image-create_image \t corner8 = (%f, %f, %f) \n", (update->dt)*(update->ntimestep), corner8[0], corner8[1], corner8[2] );
+
+	// FPF
+	fprintf(screen, "t= %f sec, dump_hf_image-crate_image \t corners done assigned\n", (update->dt)*(update->ntimestep) );
 
 	image->draw_triangle(corner3, corner4, corner2, color);
 	image->draw_triangle(corner3, corner1, corner2, color);
@@ -890,6 +945,8 @@ void DumpHfImage2::create_image()
 	image->draw_triangle(corner4, corner8, corner6, color);
 	image->draw_triangle(corner4, corner2, corner6, color);
 
+	//FPF
+	fprintf(screen, "t= %f sec, dump_hf_image-crate_image \t draw_triagnles done \n", (update->dt)*(update->ntimestep) );
 	  
 	image->draw_cylinder(corner1,corner2,boxcolor,diameter,3);
 	image->draw_cylinder(corner3,corner4,boxcolor,diameter,3);
@@ -904,6 +961,9 @@ void DumpHfImage2::create_image()
 	image->draw_cylinder(corner5,corner7,boxcolor,diameter,3);
 	image->draw_cylinder(corner6,corner8,boxcolor,diameter,3);
 	m += size_one;
+
+	//FPF
+	fprintf(screen, "t= %f sec, dump_hf_image-crate_image \T draw_cylinder done \n", (update->dt)*(update->ntimestep) );
       }
       
     }
@@ -1283,6 +1343,8 @@ void DumpHfImage2::create_image()
 int DumpHfImage2::pack_forward_comm(int n, int *list, double *buf, 
                                  int pbc_flag, int *pbc)
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-pack_forward_comm\n", (update->dt)*(update->ntimestep) );
+
   int i,j,m;
 
   m = 0;
@@ -1308,6 +1370,8 @@ int DumpHfImage2::pack_forward_comm(int n, int *list, double *buf,
 
 void DumpHfImage2::unpack_forward_comm(int n, int first, double *buf)
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-unpack_forward_comm\n", (update->dt)*(update->ntimestep) );
+
   int i,m,last;
 
   m = 0;
@@ -1328,6 +1392,8 @@ void DumpHfImage2::unpack_forward_comm(int n, int first, double *buf)
 
 int DumpHfImage2::modify_param(int narg, char **arg)
 {
+  fprintf(screen, "t= %f sec, dump_hf2_image-modify_param\n", (update->dt)*(update->ntimestep) );
+
   int n = DumpCustom::modify_param(narg,arg);
   if (n) return n;
 

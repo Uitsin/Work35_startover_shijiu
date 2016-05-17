@@ -87,9 +87,9 @@ void DeltaCutoffRandomness3::command(int narg, char **arg)
     channel_y = x0[channel_atom][1];
     channel_z = x0[channel_atom][2];
     
-    check_x = (fmod(fabs(channel_x-0.5*lattice_mag), 1.0*lattice_mag) ==0); //and (flag_x == 1);
-    check_y = (fmod(fabs(channel_y-0.5*lattice_mag), 1.0*lattice_mag) ==0); //and (flag_y == 1);
-    check_z = (fmod(fabs(channel_z-0.5*lattice_mag), 1.0*lattice_mag) ==0); // and (flag_z == 1);
+    check_x = (fabs(fmod(fabs(channel_x-0.5*lattice_mag), lattice_mag)) < 1e-3*lattice_mag); //and (flag_x == 1);
+    check_y = (fabs(fmod(fabs(channel_y-0.5*lattice_mag), lattice_mag)) < 1e-3*lattice_mag); //and (flag_y == 1);
+    check_z = (fabs(fmod(fabs(channel_z-0.5*lattice_mag), lattice_mag)) < 1e-3*lattice_mag); // and (flag_z == 1);
 
     
     channel_delta_cutoff[channel_atom] = 1000000; 	// make all bond unbreakable 
@@ -117,9 +117,9 @@ void DeltaCutoffRandomness3::command(int narg, char **arg)
       
       fprintf(screen, "x0 = %f, y0 = %f, z0 = %f\n\n", channel_x, channel_y, channel_z);  
 
-	fprintf(screen, "check_x = %d\n channel_x = %f\n lattice_mag = %f\n RHS = %f\n", check_x, channel_x, lattice_mag, fmod(fabs(channel_x-0.5*lattice_mag), 1.0*lattice_mag) ); 
-      fprintf(screen, "check_y = %d\n channel_y = %f\n lattice_mag = %f\n RHS = %f\n", check_y, channel_y, lattice_mag, fmod(fabs(channel_y-0.5*lattice_mag), 1.0*lattice_mag) ); 
-      fprintf(screen, "check_z = %d\n channel_z = %f\n lattice_mag = %f\n RHS = %f\n", check_z, channel_z, lattice_mag, fmod(fabs(channel_z-0.5*lattice_mag), 1.0*lattice_mag) ); 
+      fprintf(screen, "check_x = %d\n channel_x = %f\n lattice_mag = %f\n RHS = %f\n", check_x, channel_x, lattice_mag, fmod(fabs(channel_x-0.5*lattice_mag), lattice_mag) ); 
+      fprintf(screen, "check_y = %d\n channel_y = %f\n lattice_mag = %f\n RHS = %f\n", check_y, channel_y, lattice_mag, fmod(fabs(channel_y-0.5*lattice_mag), lattice_mag) ); 
+      fprintf(screen, "check_z = %d\n channel_z = %f\n lattice_mag = %f\n RHS = %f\n", check_z, channel_z, lattice_mag, fmod(fabs(channel_z-0.5*lattice_mag), lattice_mag) ); 
     fprintf(screen, "channel_delta_cutoff[n] = %f\n\n", cutoff_mean_z ); 
 
     
